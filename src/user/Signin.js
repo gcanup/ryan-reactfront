@@ -1,46 +1,58 @@
-import React, { Component } from "react";
-class Signup extends Component {
+import React from "react";
+import {Redirect} from 'react-router-dom'
+
+
+class Signin extends React.Component {
   constructor() {
     super();
     this.state = {
-      name: "",
       email: "",
       password: "",
       error: "",
-      open: false,
-      recaptcha: false
+      redirectToReferer: false,
+      loading: false
     };
   }
   handleChange = name => event => {
-    this.setState({ error: "", open: false });
+    this.setState({ error: ""});
     this.setState({ [name]: event.target.value });
   };
 
+  authenticate = (jwt) => {
+    if(typeof window !== "undefined") {
+      localStorage.setItem("jwt", JSON.stringify(jwt))
+      this.setState({redirectToReferer: true})
+  }
+}
+
   clickSubmit = event => {
-    event.preventDefault();
-    const { name, email, password } = this.state;
-    const user = {
-      name, // it was meant like name: name , but save identification so
+    event.preventDefault()
+    this.setState({
+      loading: true
+    })
+    const { email, password } = this.state;
+    const user = {// it was meant like name: name , but save identification so
       email,
       password
     };
-    this.signup(user).then(data => {
-      console.log("data is as follows", data);
-      if (data.error) this.setState({ error: data.error });
-      else
-        this.setState({
-          error: "",
-          name: "",
-          email: "",
-          password: "",
-          open: true
-        });
+    console.log(user)
+    this.signin(user)
+    .then(data => {
+      if (data.error) {
+        console.log('Signed in failed', data.error)
+        this.setState({ error: data.error, loading: false})
+      }
+      else {
+        //authenticate
+        this.authenticate(data)
+         console.log('Signed in successfully')
+      }
+          
     });
   };
 
-  signup = user => {
-    console.log(user);
-    return fetch("http://localhost:8080/signup", {
+  signin = user => {
+    return fetch("http://localhost:8080/signin", {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -54,17 +66,8 @@ class Signup extends Component {
       .catch(err => console.log(err));
   };
 
-  signupForm = (name, email, password) => 
+  signinForm = (email, password) => 
       <form>
-        <div className="form-group">
-          <label className="text-muted">Name</label>
-          <input
-            onChange={this.handleChange("name")}
-            type="text"
-            className="form-control"
-            value={name}
-          />
-        </div>
         <div className="form-group">
           <label className="text-muted">Email</label>
           <input
@@ -89,26 +92,25 @@ class Signup extends Component {
       </form>
 
   render() {
-    const { name, email, password, error, open } = this.state;
+    const { email, password, error, redirectToReferer, loading } = this.state;
+    console.log(redirectToReferer, loading)
+    if(redirectToReferer) {
+      return <Redirect to='/' />
+    }
     return (
       <div className="container">
-        <h2> Sign up </h2>
+        <h2> Sign In </h2>
         <div
           className="alert alert-danger"
           style={{ display: error ? "" : "none" }}
         >
           {error}
         </div>
-        <div
-          className="alert alert-info"
-          style={{ display: open ? "" : "none" }}
-        >
-          New account is successfully created. Please sign in.
-        </div>
-        {this.signupForm(name, email, password)}
+        {loading? <div className='jumborton text-center'> <h2>Loading</h2> </div>: '' }
+        {this.signinForm(email, password)}
       </div>
     );
   }
 }
 
-export default Signup;
+export default Signin;
