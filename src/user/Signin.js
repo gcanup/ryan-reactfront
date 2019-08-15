@@ -1,5 +1,6 @@
 import React from "react";
 import {Redirect} from 'react-router-dom'
+import {signin, authenticate} from '../auth/'
 
 
 class Signin extends React.Component {
@@ -18,13 +19,6 @@ class Signin extends React.Component {
     this.setState({ [name]: event.target.value });
   };
 
-  authenticate = (jwt) => {
-    if(typeof window !== "undefined") {
-      localStorage.setItem("jwt", JSON.stringify(jwt))
-      this.setState({redirectToReferer: true})
-  }
-}
-
   clickSubmit = event => {
     event.preventDefault()
     this.setState({
@@ -36,7 +30,7 @@ class Signin extends React.Component {
       password
     };
     console.log(user)
-    this.signin(user)
+    signin(user)
     .then(data => {
       if (data.error) {
         console.log('Signed in failed', data.error)
@@ -44,27 +38,17 @@ class Signin extends React.Component {
       }
       else {
         //authenticate
-        this.authenticate(data)
+        authenticate(data, () => {
+          this.setState({redirectToReferer: true})
+        })
+
          console.log('Signed in successfully')
       }
           
     });
   };
 
-  signin = user => {
-    return fetch("http://localhost:8080/signin", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(user)
-    })
-      .then(response => {
-        return response.json();
-      })
-      .catch(err => console.log(err));
-  };
+
 
   signinForm = (email, password) => 
       <form>
@@ -98,7 +82,7 @@ class Signin extends React.Component {
       return <Redirect to='/' />
     }
     return (
-      <div className="container">
+      <div className="container mt-2">
         <h2> Sign In </h2>
         <div
           className="alert alert-danger"
