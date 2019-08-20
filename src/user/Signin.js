@@ -77,7 +77,6 @@ class Signin extends React.Component {
 
   render() {
     const { email, password, error, redirectToReferer, loading } = this.state;
-    console.log(redirectToReferer, loading)
     if(redirectToReferer) {
       return <Redirect to='/' />
     }
