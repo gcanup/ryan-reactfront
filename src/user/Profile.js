@@ -38,17 +38,19 @@ class Profile extends Component {
   render() {
     const { redirectToSignin, user } = this.state;
     if (redirectToSignin) return <Redirect to="/signin" />;
+    const photoUrl = user._id?`${process.env.REACT_APP_API_URL}/user/photo/${user._id}?${new Date().getTime()}`: profileImg
+
     return (
       <div className="container text-center">
         <h2 className="mt-5 mb-5">Profile</h2>
         <div className="row">
           <div className="col-md-6">
-            <img
-              className="card-img-top"
-              src={profileImg}
-              alt="Card cap"
-              style={{ width: "80%", height: "20vw", objectFit: "cover" }}
-            />
+          <img 
+            style={{height: "200px", width:"auto"}} 
+            className='img-thumbnail' 
+            src={photoUrl}
+            onError={i => (i.target.src = `${profileImg}`)} 
+            alt={user.name}/>
           </div>
           <div className="col-md-6">
             <div className="lead mt-5 ml-5">

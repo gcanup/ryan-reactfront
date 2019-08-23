@@ -21,7 +21,7 @@ export const update = (userId, token, user) => {
              Accept: "application/json",
              Authorization: `Bearer ${token}`
          },
-         body: JSON.stringify(user)
+         body: user
      })
      .then(response => {
          return response.json();

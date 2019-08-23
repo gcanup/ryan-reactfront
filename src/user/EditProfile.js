@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { isAuthenticated } from "../auth";
 import { read, update } from "./apiUser";
 import { Redirect } from "react-router-dom";
-
+import profileImg from '../images/alias.jpeg'
 class EditProfile extends Component {
     constructor() {
         super();
@@ -12,7 +12,8 @@ class EditProfile extends Component {
             email: "",
             password: "",
             redirectToProfile: false,
-            error: ""
+            error: "",
+            fileSize: 0
         };
     }
 
@@ -39,8 +40,8 @@ class EditProfile extends Component {
     }
 
     isValid = () => {
-        const { name, email, password } = this.state;
-        if (name.length == 0) {
+        const { name, email, password, fileSize } = this.state;
+        if (name.length === 0) {
             this.setState({ error: "Name is required" });
             return false;
         }
@@ -55,27 +56,23 @@ class EditProfile extends Component {
             });
             return false;
         }
+        if (fileSize > 100000) {
+            this.setState({ error: "Filesize should be less than 1mb" });
+            return false;
+        }
         return true;
     };
 
     handleChange = name => event => {
-        const value =
-            name === "photo" ? event.target.files[0] : event.target.value;
+        const value = name === "photo" ? event.target.files[0] : event.target.value;
+        const fileSize = name === "photo" ? event.target.files[0].size : 0;
         this.userData.set(name, value);
-        this.setState({ [name]: value });
+        this.setState({ [name]: value, fileSize });
     };
 
     clickSubmit = event => {
         event.preventDefault();
-
         if (this.isValid()) {
-            const { name, email, password } = this.state;
-            const user = {
-                name,
-                email,
-                password: password || undefined
-            };
-            // console.log(user);
             const userId = this.props.match.params.userId;
             const token = isAuthenticated().token;
 
@@ -149,6 +146,7 @@ class EditProfile extends Component {
         if (redirectToProfile) {
             return <Redirect to={`/user/${id}`} />;
         }
+        const photoUrl = id?`${process.env.REACT_APP_API_URL}/user/photo/${id}?${new Date().getTime()}`: profileImg 
 
         return (
             <div className="container">
@@ -159,7 +157,12 @@ class EditProfile extends Component {
                 >
                     {error}
                 </div>
-
+            <img 
+                style={{height: "200px", width:"auto"}} 
+                className='img-thumbnail' 
+                src={photoUrl}
+                onError={i => (i.target.src = `${profileImg}`)}
+                alt={name}/>
                 {this.signupForm(name, email, password)}
             </div>
         );
